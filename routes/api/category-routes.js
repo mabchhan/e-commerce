@@ -6,19 +6,29 @@ const { Category, Product } = require("../../models");
 router.get("/", (req, res) => {
   // find all categories
   // be sure to include its associated Products
-  Category.findAll({ include: [{ model: Product }] }).then((categoryData) => {
-    res.json(categoryData);
-  });
+  Category.findAll({ include: [{ model: Product }] })
+    .then((categoryData) => {
+      res.json(categoryData);
+    })
+    .catch((err) => {
+      res.json(err);
+    });
 });
 
 router.get("/:id", (req, res) => {
   // find one category by its `id` value
   // be sure to include its associated Products
-  Category.findByPk(req.params.id, { include: [{ model: Product }] }).then(
-    (categoryData) => {
+  Category.findByPk(req.params.id, { include: [{ model: Product }] })
+    .then((categoryData) => {
+      if (!categoryData) {
+        res.status(404).json({ message: "No category found with this id" });
+        return;
+      }
       res.json(categoryData);
-    }
-  );
+    })
+    .catch((err) => {
+      res.json(err);
+    });
 });
 
 router.post("/", (req, res) => {
@@ -39,6 +49,11 @@ router.put("/:id", (req, res) => {
     { where: { id: req.params.id } }
   )
     .then((updateCategory) => {
+      //console.log(updateCategory);
+      if (!updateCategory[0]) {
+        res.status(404).json({ message: "No category found with this id" });
+        return;
+      }
       res.json(updateCategory);
     })
     .catch((err) => res.json(err));
@@ -48,6 +63,10 @@ router.delete("/:id", (req, res) => {
   // delete a category by its `id` value
   Category.destroy({ where: { id: req.params.id } })
     .then((deletedCategory) => {
+      if (!deletedCategory) {
+        res.status(404).json({ message: "No category found with this id" });
+        return;
+      }
       res.json(deletedCategory);
     })
     .catch((err) => {
